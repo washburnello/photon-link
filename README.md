@@ -99,6 +99,18 @@ ss -tnp | grep 192.168.87.251:6000
 - model, firmware version, serial number, joined SSID
 - operating mode
 - print state, and a 12-field status payload while printing
+- files off the USB stick (`getfile`) and preview metadata (`getPreview1`) —
+  both still to be worked out
+
+## Files go on and off the stick as a filesystem
+
+The protocol can pull files *off* the printer (`getfile`) and delete them
+(`delfile`), but it has **no upload command** — all 25 verbs were enumerated
+and none of them sends a file to the printer. That matches how firmware updates
+work: the `.bin` images already live on the stick and are flashed from there.
+
+So to add a print job, copy it onto the FAT32 stick with any filesystem and
+refresh the printer's file list. No protocol needed, and none exists to use.
 
 ## What is not decoded yet
 

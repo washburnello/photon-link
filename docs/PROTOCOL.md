@@ -86,7 +86,10 @@ table, so the field *types* are known even where the field *names* are not.
 | `stopUV` | `stopUV,OK` / `stopUV,ERROR1` | kills UV exposure |
 | `getmode` | `getmode,%d` | also emitted unsolicitedly |
 | `setwifi` | `setwifi,OK` / `setwifi,ERROR1` | reconfigure networking |
-| `getFirmware` | `ERROR2,end` observed | firmware info/transfer |
+| `getFirmware` | `ERROR2,end` observed | answers an error even on a healthy unit |
+| `getfile` | `getfile,ERROR1` observed | pull a file **off** the printer; argument format unknown |
+| `getPreview1` | `getPreview1,%s,%lu,%lu,%lu` | preview metadata: name + 3 unsigned longs (unconfirmed) |
+| `getPreview2` | `getPreview2,ERROR3,end` seen in firmware | second preview variant, probably image data |
 
 ### Other firmware strings of interest
 
@@ -107,7 +110,58 @@ getstatus,stop,end
 getstatus,print,end
 ```
 
+## Files: the protocol is read-only
+
+The complete verb set recovered from the firmware is 25 commands — listed
+across the tables above. **None of them sends a file to the printer.** There is
+no `sendfile`, `upload`, `putfile`, `write` or equivalent; this was checked both
+by enumerating every token in the command string pool and by searching the
+whole image for upload-style verbs. Both came back empty.
+
+What exists instead:
+
+| Direction | Command | |
+|---|---|---|
+| printer → client | `getfile` | pull a file off the USB stick |
+| client → printer | *(none)* | **no upload path exists** |
+| client → printer | `delfile,%s` | delete a file |
+| client → printer | `delhistory,%d` | delete print history |
+
+So the protocol can *read* files and *delete* them, but not create them.
+
+This is consistent with how firmware updates work: the `.bin` images already
+sit on the USB stick, and the mainboard flashes them from there after the user
+confirms "Update firmware?". Nothing needs to be transferred over the network,
+so no upload command was ever written.
+
+**To get a file onto the stick, copy it with a filesystem.** The stick is plain
+FAT32, so plug it into any machine and copy the file on; the printer re-scans it
+(the "refresh file list" action on the printer). No protocol involvement, and no
+reason to want one.
+
+### File addressing
+
+A `%s/%s,` format string in the firmware suggests the printer addresses files
+as a directory plus a name, even though files appear flat on the stick. The
+internal directory layout is unknown.
+
+`getfile` answers `getfile,ERROR1` both with no argument and with a
+non-existent filename, so it is not yet known whether that is a malformed-argument
+error or a missing-file error — the argument format remains the open question
+here.
+
+### Recognised file extensions
+
+`.photon`, `.photons`, `.PHOTON`, `.PHOTONS`, `.pws`, `.PWS`
+
+Print jobs are sliced `.pwmx` files on the stick, which is a different
+extension from the ones the protocol's preview commands appear to expect.
+`getPreview1`'s reply shape (`%s,%lu,%lu,%lu`) suggests it returns a name plus
+three dimensions, and `getPreview2` plausibly returns image data — which would
+make on-printer thumbnails obtainable. Unconfirmed.
+
 ## `getstatus` fields (in progress)
+
 
 The firmware's format string is:
 
