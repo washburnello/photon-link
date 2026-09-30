@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photon-link"
+version = "0.1.0"
+description = "Network client and tools for the Anycubic Photon Mono X printer"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["anycubic", "photon", "3d-printer", "resin", "reverse-engineering"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Home Automation",
+]
+dependencies = []
+
+[project.optional-dependencies]
+# Only needed for the offline firmware analysis tools in fw/ and tools/.
+analysis = ["capstone>=5"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+photonlink = "photonlink.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/washburnello/photon-link"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

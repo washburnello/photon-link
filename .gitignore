@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# Vendor firmware and derived dumps.
+# The mainboard firmware image is Anycubic's copyrighted binary and is NOT
+# committed here. tools/extract_firmware.sh pulls it off the printer's own USB
+# stick instead. See docs/REVERSE-ENGINEERING.md.
+fw/*.bin
+fw/s_ascii.txt
+fw/s3.txt
+fw/so.txt
+captures/
+*.bin
+
+# Editors / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
